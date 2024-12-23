@@ -1,28 +1,35 @@
 const express= require("express");
+const mongoDb=require("./config/database");
 const app=express();
+const User=require("./models/user");
 
-const {adminAuth}=require("./middlewares/auth")
-// if there is any error we can always try to handle that using try and catch block
-app.use("/",(err,req,res,next)=>{
-    if(err){
-        res.status(500).send("Something Went Wrong");
-    }
-   
-  
-})
 
-app.get("/getuserData",(req,res)=>{
-    try {
-        throw new Error("sfbsfbjbfb");
-    res.send("User data sent");
-    } catch (err) {
-        res.status(500).send("Some unexpected error happened");
-    }
+app.post("/signUp",async(req,res)=>{
+    const user= new User  ({
+        firstname:"Swarnim ",
+        lastname:"Rajput",
+        emailId:"Swarnimrajput5826@gmail.com",
+        password:"2344555uhf",
+
+
+    });
+    try{await user.save();
+        res.send("User Added Succesfuylly");}
+        catch(err){
+            res.status(400).send("Error Saving the User"+err.message);
+        }
     
 })
 
-
-
-app.listen(3000,()=>{
-    console.log("Server conected successfully");
+mongoDb().then(()=>{
+    console.log("Database Connected");
+    app.listen(3000,()=>{
+        console.log("Server conected successfully");
+    });
+})
+.catch((err)=>{
+    console.log("Database cannot be connected");
 });
+
+
+
