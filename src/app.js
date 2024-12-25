@@ -59,8 +59,9 @@ app.patch("/users",async(req,res)=>{
     const data=req.body;
     console.log(data);
     try{
-          await User.findByIdAndUpdate(userId,data,{returnDocument:"after"});
+          await User.findByIdAndUpdate(userId,data,{returnDocument:"after",runValidators:true});
         res.send("User Updated Succesfully");
+
     }catch(err){
         res.status(404).send("User not found");
     }
