@@ -4,6 +4,7 @@ const user = require("./models/user");
 const app=express();
 const User=require("./models/user");
 
+
 app.use(express.json());
 app.post("/signUp",async(req,res)=>{
     const user= new User  (req.body);
@@ -54,16 +55,26 @@ app.delete("/users",async(req,res)=>{
     }
 })
 
-app.patch("/users",async(req,res)=>{
-    const userId=req.body.userId;
+app.patch("/users/:userId",async(req,res)=>{
+    const userId=req.params?.userId;
     const data=req.body;
-    console.log(data);
+
+   
     try{
-          await User.findByIdAndUpdate(userId,data,{returnDocument:"after",runValidators:true});
+        const AllowedUpdates=["photoUrl","About","Gender","age","Skills"];
+        const isUpdateAllowed=Object.keys(data).every((k)=>AllowedUpdates.includes(k));
+        if(!isUpdateAllowed){
+            throw new Error("Update Not Allowed");
+        }
+        if(data?.Skills.length>10){
+            throw new Error("Skills Cannot be More than 10")
+        }
+         const user= await User.findByIdAndUpdate(userId,data,{returnDocument:"after",runValidators:true});
+    
         res.send("User Updated Succesfully");
 
     }catch(err){
-        res.status(404).send("User not found");
+        res.status(404).send("Update Failed"+ err.message);
     }
 
 })
