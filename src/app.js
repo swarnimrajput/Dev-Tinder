@@ -3,17 +3,48 @@ const mongoDb=require("./config/database");
 const user = require("./models/user");
 const app=express();
 const User=require("./models/user");
-
+const validator=require("validator");
+const {validatesignUpdata}=require("./utils/validation");
+const bcrypt =require("bcrypt");
 
 app.use(express.json());
+
 app.post("/signUp",async(req,res)=>{
-    const user= new User  (req.body);
-    try{await user.save();
+
+    try{ 
+    validatesignUpdata(req); 
+
+        const{firstname,lastname,emailId,password}=req.body; 
+
+        const Hashpassword=await bcrypt.hash(password,10);
+        
+
+    const user= new User  ({firstname,lastname,emailId,password :Hashpassword  });
+   await user.save();
         res.send("User Added Succesfuylly");}
         catch(err){
             res.status(400).send("Error Saving the User"+err.message);
         }
     
+})
+
+app.post("/login",async(req,res)=>{
+    try {
+        const{emailId,password}=req.body;
+        const user = await User.findOne({emailId: emailId});
+        if(!user){
+            throw new Error("Invalid Credentials")
+        }
+        const isPasswordValid=await bcrypt.compare(password,user.password);
+        if(isPasswordValid){
+            res.send("Login Successful");
+        }
+        else{
+            throw new Error("Password IS NOT CORRECT");
+        }
+    } catch (err) {
+        res.status(400).send("ERROR: " +err.message);
+    }
 })
 
 app.get("/users",async (req,res)=>{
